@@ -9,8 +9,8 @@ import (
 	"os/exec" // Package for executing external commands
 	"strconv" // Package for string conversions
 	"strings" // Package for manipulating strings
-	"regexp"
-	"bufio"
+	"regexp" // Package for regular expressions
+	"bufio"	// Package used for buffered
 	"log" // Package for logging
 	"fmt" // Package for formatted I/O
 )
