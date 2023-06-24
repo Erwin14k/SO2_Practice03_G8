@@ -9,71 +9,80 @@ import (
 	"os/exec" // Package for executing external commands
 	"strconv" // Package for string conversions
 	"strings" // Package for manipulating strings
+	"regexp"
+	"bufio"
 	"log" // Package for logging
 	"fmt" // Package for formatted I/O
 )
 
-// Process represents a process with its properties
+// Process represents a process with its attributes.
 type Process struct {
-	Pid     int    `json:"pid"`
-	Nombre  string `json:"nombre"`
-	Usuario string `json:"usuario"`
-	Estado  string `json:"estado"`
-	Ram     int    `json:"ram"`
-	Padre   int    `json:"padre"`
+	Pid     int    `json:"pid"`     // Pid represents the process ID.
+	Nombre  string `json:"nombre"`  // Nombre represents the name of the process.
+	Usuario string `json:"usuario"` // Usuario represents the user associated with the process.
+	Estado  string `json:"estado"`  // Estado represents the state of the process.
+	Ram     int    `json:"ram"`     // Ram represents the amount of RAM (in bytes) used by the process.
+	Padre   int    `json:"padre"`   // Padre represents the parent process ID.
 }
 
-// CPUInfo represents CPU information and process tasks
+// CPUInfo represents CPU information and process tasks.
 type CPUInfo struct {
-	TotalCPU int       `json:"totalcpu"`
-	Running  int       `json:"running"`
-	Sleeping int       `json:"sleeping"`
-	Stopped  int       `json:"stopped"`
-	Zombie   int       `json:"zombie"`
-	Total    int       `json:"total"`
-	Tasks    []Process `json:"tasks"`
+	TotalCPU int       `json:"totalcpu"` // TotalCPU represents the total number of CPUs.
+	Running  int       `json:"running"`  // Running represents the number of running processes.
+	Sleeping int       `json:"sleeping"` // Sleeping represents the number of sleeping processes.
+	Stopped  int       `json:"stopped"`  // Stopped represents the number of stopped processes.
+	Zombie   int       `json:"zombie"`   // Zombie represents the number of zombie processes.
+	Total    int       `json:"total"`    // Total represents the total number of processes.
+	Tasks    []Process `json:"tasks"`    // Tasks represents a list of process tasks.
 }
 
-// RAMInfo represents RAM information
+// RAMInfo represents RAM information.
 type RAMInfo struct {
-	TotalRAM    int `json:"totalram"`
-	RAMLibre    int `json:"ramlibre"`
-	RAMOcupada  int `json:"ramocupada"`
+	TotalRAM    int `json:"totalram"`    // TotalRAM represents the total amount of RAM.
+	RAMLibre    int `json:"ramlibre"`    // RAMLibre represents the amount of free RAM.
+	RAMOcupada  int `json:"ramocupada"`  // RAMOcupada represents the amount of occupied RAM.
 }
 
-// General represents general system information
-type general struct {
-	TotalRAM    int `json:"totalram"`
-	RAMLibre    int `json:"ramlibre"`
-	RAMOcupada  int `json:"ramocupada"`
-	TotalCPU    int `json:"totalcpu"`
+// General represents general system information.
+type General struct {
+	TotalRAM    int `json:"totalram"`    // TotalRAM represents the total amount of RAM.
+	RAMLibre    int `json:"ramlibre"`    // RAMLibre represents the amount of free RAM.
+	RAMOcupada  int `json:"ramocupada"`  // RAMOcupada represents the amount of occupied RAM.
+	TotalCPU    int `json:"totalcpu"`    // TotalCPU represents the total number of CPUs.
 }
 
-// Counters represents process counters
-type counters struct {
-	Running  int       `json:"running"`
-	Sleeping int       `json:"sleeping"`
-	Stopped  int       `json:"stopped"`
-	Zombie   int       `json:"zombie"`
-	Total    int       `json:"total"`
+// Counters represents process counters.
+type Counters struct {
+	Running  int `json:"running"`  // Running represents the number of running processes.
+	Sleeping int `json:"sleeping"` // Sleeping represents the number of sleeping processes.
+	Stopped  int `json:"stopped"`  // Stopped represents the number of stopped processes.
+	Zombie   int `json:"zombie"`   // Zombie represents the number of zombie processes.
+	Total    int `json:"total"`    // Total represents the total number of processes.
 }
 
-// AllData represents all system data
+// AllData represents all system data.
 type AllData struct {
-	AllGenerales    []general    `json:"AllGenerales"`
-	AllTipoProcesos []Process  `json:"AllTipoProcesos"`
-	AllProcesos     []counters   `json:"AllProcesos"`
+	AllGenerales    []General       `json:"AllGenerales"`    // AllGenerales represents a list of general system information.
+	AllTipoProcesos []Process       `json:"AllTipoProcesos"` // AllTipoProcesos represents a list of process information.
+	AllProcesos     []Counters      `json:"AllProcesos"`     // AllProcesos represents a list of process counters.
 }
 
-// MemoryRow represents a row of memory information
-type MemoryRow struct {
-	InitialAddress string   `json:"initial_address"`
-	FinalAddress   string   `json:"final_address"`
-	Permissions    string   `json:"permissions"`
-	Device         string   `json:"device"`
-	File           string   `json:"file"`
-	RSS            int      `json:"rss_mb"`
-	Size           int      `json:"size_mb"`
+// MemoryBlock represents a memory block.
+type MemoryBlock struct {
+	InitialAddress string   `json:"initial_address"` // InitialAddress represents the initial address of the memory block.
+	FinalAddress   string   `json:"final_address"`   // FinalAddress represents the final address of the memory block.
+	Permissions    []string `json:"permissions"`     // Permissions represents the permissions associated with the memory block.
+	Device         string   `json:"device"`          // Device represents the device associated with the memory block.
+	File           string   `json:"file"`            // File represents the file associated with the memory block.
+	Size           float64  `json:"size"`            // Size represents the size of the memory block.
+	Rss            float64  `json:"rss"`             // Rss represents the resident set size (RSS) of the memory block.
+}
+
+// MemoryResult represents the result of memory information.
+type MemoryResult struct {
+	TotalSize   float64        `json:"total_size"`   // TotalSize represents the total size of memory.
+	TotalRss    float64        `json:"total_rss"`    // TotalRss represents the total resident set size (RSS) of memory.
+	Blocks      []MemoryBlock  `json:"blocks"`       // Blocks represents a list of memory blocks.
 }
 
 /* createData creates the system data by reading the contents of specific files, 
@@ -216,11 +225,12 @@ func handleRoute(w http.ResponseWriter, r *http.Request){
 	fmt.Fprintf(w, "Welcome to my API :D")
 }
 
-// handleMemory handles the route "/memory" by reading the request body, extracting the PID (process ID), and retrieving the memory information of the process.
-// It executes the "cat /proc/pid/maps" command, parses the output, generates JSON data, and sends it as the response.
+// smapsHandler handles the HTTP request for retrieving process memory information.
+// It expects a POST request with the process ID (PID) in the request body.
+// It returns memory information for the specified process as a JSON response.
 // w - http.ResponseWriter: The response writer used to write the HTTP response.
 // r - *http.Request: The HTTP request received.
-func handleMemory(w http.ResponseWriter, r *http.Request) {
+func smapsHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body) // Read the request body
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError) // Return HTTP 500 Internal Server Error if there's an error reading the body
@@ -234,7 +244,7 @@ func handleMemory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("sudo", "cat", fmt.Sprintf("/proc/%d/smaps", pid)) // Create a command to execute "cat /proc/pid/smaps"
+	cmd := exec.Command("sudo", "cat", fmt.Sprintf("/proc/%d/smaps", pid)) // Create a command to execute "cat /proc/pid/maps"
 	output, err := cmd.Output()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError) // Return HTTP 500 Internal Server Error if there's an error executing the command
@@ -242,115 +252,103 @@ func handleMemory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows := parseMemoryRows(string(output)) // Parse the memory rows from the command output
-	jsonData, err := json.Marshal(rows)     // Generate JSON data from the parsed rows
+	blocks, totalSize, totalRss := parseSmapsOutput(string(output)) // Parse the smaps output and get blocks, total size, and total RSS
+	result := MemoryResult{
+		Blocks:    blocks,
+		TotalSize: totalSize,
+		TotalRss:  totalRss,
+	}
+
+	response, err := json.Marshal(result) // Convert the result to JSON format
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError) // Return HTTP 500 Internal Server Error if there's an error generating JSON
-		fmt.Fprintln(w, "Error generating JSON")
+		http.Error(w, "Error converting data to JSON", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)              // Set HTTP 200 OK status code
-	fmt.Println("Information: Process Memory PID", pid)
-	fmt.Fprintln(w, string(jsonData))         // Write the process data to the response
+	w.Header().Set("Content-Type", "application/json") // Set the response header as JSON
+	w.Write(response) // Write the response to the HTTP response body
 }
 
+// parseSmapsOutput parses the output of the smaps command and extracts memory block information, total size, and total RSS.
+// It takes a string parameter 'output' representing the output of the smaps command.
+// It returns a slice of MemoryBlock representing individual memory blocks, and two float64 values for total size and total RSS.
+func parseSmapsOutput(output string) ([]MemoryBlock, float64, float64) {
+	scanner := bufio.NewScanner(strings.NewReader(output))
+	scanner.Split(bufio.ScanLines)
+	// Data to send to frontend enviroment
+	var blocks []MemoryBlock
+	var currentBlock MemoryBlock
+	var totalSize, totalRss float64
 
-// parseMemoryRows parses the memory rows from the output of cat /proc/pid/maps command and returns an array of MemoryRow objects.
-// output - string: The output of cat /proc/pid/maps command.
-// Returns []MemoryRow: An array of MemoryRow objects representing the parsed memory rows.
-func parseMemoryRows(output string) []MemoryRow {
-	rows := []MemoryRow{}
-
-	lines := strings.Split(output, "\n")
-	var row MemoryRow
-	for _, line := range lines {
-		if line == "" {
-			if row.File != "" {
-				rows = append(rows, row)
-			}
-			row = MemoryRow{}
-			continue
-		}
-
+	for scanner.Scan() {
+		line := scanner.Text()
 		if strings.Contains(line, "-") {
 			fields := strings.Fields(line)
 			if len(fields) < 6 {
 				continue
 			}
+			// parsing data fields
+			address := fields[0]
+			permissions := fields[1]
+			device := fields[3]
+			file := fields[len(fields)-1]
 
-			row.InitialAddress = strings.Split(fields[0], "-")[0]
-			row.FinalAddress = strings.Split(fields[0], "-")[1]
-			row.Permissions = fields[1]
-			row.Device = fields[3]
-			row.File = fields[5]
-		} else if strings.HasPrefix(line, "Rss:") {
-			fields := strings.Fields(line)
-			if len(fields) < 2 {
-				continue
-			}
+			addresses := strings.Split(address, "-")
+			initialAddress := addresses[0]
+			finalAddress := addresses[1]
 
-			value, err := strconv.Atoi(fields[1])
-			if err != nil {
-				continue
+			currentBlock = MemoryBlock{
+				InitialAddress: initialAddress,
+				FinalAddress:   finalAddress,
+				Permissions:    mapPermissions(permissions),
+				Device:         device,
+				File:           file,
 			}
-			row.RSS = value / 1024 // Convert KB to MB
 		} else if strings.HasPrefix(line, "Size:") {
-			fields := strings.Fields(line)
-			if len(fields) < 2 {
-				continue
-			}
-
-			value, err := strconv.Atoi(fields[1])
-			if err != nil {
-				continue
-			}
-			row.Size = value / 1024 // Convert KB to MB
+			size := extractValue(line)
+			currentBlock.Size = float64(size) / 1024
+			totalSize += currentBlock.Size
+		} else if strings.HasPrefix(line, "Rss:") {
+			rss := extractValue(line)
+			currentBlock.Rss = float64(rss) / 1024
+			totalRss += currentBlock.Rss
+			blocks = append(blocks, currentBlock)
 		}
 	}
-
-	return rows
+	// Returning data
+	return blocks, totalSize, totalRss
 }
 
-// calculateSizeKB calculates the size in kilobytes from the initial and final addresses.
-// initialAddress - string: The initial address.
-// finalAddress - string: The final address.
-// Returns int: The size in kilobytes.
-func calculateSizeKB(initialAddress, finalAddress string) int {
-	initial, err := strconv.ParseUint(initialAddress, 16, 64)
-	if err != nil {
-		return 0
+// extractValue extracts the numerical value from a line of text.
+// It takes a string parameter 'line' representing the line of text.
+// It returns an integer value extracted from the line, or 0 if no value is found.
+func extractValue(line string) int {
+	re := regexp.MustCompile(`\d+`) // Regular expression to match numerical values
+	match := re.FindString(line)   // Find the first numerical value in the line
+	if match != "" {
+		value := match
+		size, _ := strconv.Atoi(value) // Convert the matched value to an integer
+		return size
 	}
-
-	final, err := strconv.ParseUint(finalAddress, 16, 64)
-	if err != nil {
-		return 0
-	}
-
-	size := final - initial
-	sizeKB := int(size) / 1024
-
-	return sizeKB
+	return 0
 }
 
-// parsePermissions parses the permissions string and returns a list of permissions.
-// permissions - string: The permissions string.
-// Returns []string: A list of permissions.
-func parsePermissions(permissions string) []string {
-	perms := []string{}
+// mapPermissions maps the permissions string to a list of human-readable permission names.
+// It takes a string parameter 'permissions' representing the permissions string.
+// It returns a slice of strings representing the mapped permission names.
+func mapPermissions(permissions string) []string {
+	mappedPermissions := make([]string, 0)
 
 	if strings.Contains(permissions, "r") {
-		perms = append(perms, "Lectura")
+		mappedPermissions = append(mappedPermissions, "Lectura")
 	}
 	if strings.Contains(permissions, "w") {
-		perms = append(perms, "Escritura")
+		mappedPermissions = append(mappedPermissions, "Escritura")
 	}
 	if strings.Contains(permissions, "x") {
-		perms = append(perms, "Ejecucion")
+		mappedPermissions = append(mappedPermissions, "Ejecucion")
 	}
-
-	return perms
+	return mappedPermissions
 }
 
 // main is the entry point of the application.
@@ -365,7 +363,7 @@ func main() {
 	router.HandleFunc("/", handleRoute) // Set the handler function for the root route ("/")
 	router.HandleFunc("/tasks", handlePost).Methods("POST") // Set the handler function for the "/tasks" route with POST method
 	router.HandleFunc("/tasks", handleGet).Methods("GET") // Set the handler function for the "/tasks" route with GET method
-	router.HandleFunc("/memory", handleMemory).Methods("POST")
+	router.HandleFunc("/memory", smapsHandler).Methods("POST")
 
 	handler := cors.Default().Handler(router) // Create a new CORS handler with default settings
 	log.Fatal(http.ListenAndServe(":8080", handler)) // Start the HTTP server and listen on port 8080
