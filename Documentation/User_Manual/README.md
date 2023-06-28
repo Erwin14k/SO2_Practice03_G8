@@ -36,7 +36,11 @@ Mediante una tabla se le mostrará al usuario un conteo general de los procesos 
 
 ## Árbol de procesos
 
-Esta sección mostrará todos los procesos existentes con toda su información, además tendrá disponible un botón para ver los procesos hijos de un proceso si es que tuviera, también hay un botón mediante el cual podremos terminar con la ejecución de un proceso y un botón con el cual se podrá visualizar de manera personalizada la asignación de memoria del proceso seleccionado.
+Esta sección mostrará en forma tabular:
+- Todos los procesos existentes con su información.
+- Tendrá disponible un botón para ver los procesos hijos en dado caso tuviera.
+- Tendrá disponible un botón mediante el cual podremos terminar con la ejecución de un proceso.
+- Tendrá un botón con el cual se podrá visualizar de manera personalizada la asignación de memoria del proceso seleccionado.
 
 ![Untitled](Img/img3.png)
 
@@ -45,3 +49,11 @@ Esta sección mostrará todos los procesos existentes con toda su información, 
 Esta sección mostrará los permisos, las direcciones de memoria virtual inicial y final, además del tamaño de memoria del Proceso seleccionado en base a su PID.
 
 ![Untitled](Img/img4.png)
+
+También mostrará gráficas y los datos siguientes:
+- Memoria residente
+- Memoria virtual
+- Porcentaje del consumo de memoria
+- Gráfica con información de la memoria
+
+![Untitled](Img/img5.png)
