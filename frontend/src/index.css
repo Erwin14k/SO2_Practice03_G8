@@ -40,3 +40,25 @@ table tr.desplegado td {
   border: 1px solid #D921F7;
   padding: 10px;
 }
+
+
+
+
+.container2 {
+  display: flex;
+}
+.centerSegMem {
+  margin: auto;
+  width: 30%;
+  /* border: 1px solid #D921F7; */
+  padding: 10px;
+  flex: 1;
+}
+
+.centerSegMem2 {
+  margin: auto;
+  width: 30%;
+  /* border: 1px solid #D921F7; */
+  padding: 10px;
+  flex: 1;
+}

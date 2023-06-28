@@ -2,40 +2,6 @@ import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
 
 function AdministradorTareas({AllProcesos,AllGenerales}) {
-  // const [AllProcesos, setAllProcesos] = useState([
-  //   {
-  //     "Pid": 1,
-  //     "Nombre": "systemd",
-  //     "Usuario": 0,
-  //     "Estado": 1,
-  //     "Ram": 12,
-  //     "Padre": 0
-  //   },
-  //   {
-  //     "Pid": 2,
-  //     "Nombre": "kthreadd",
-  //     "Usuario": 0,
-  //     "Estado": 1,
-  //     "Ram": 0,
-  //     "Padre": 1
-  //   },
-  //   {
-  //     "Pid": 3,
-  //     "Nombre": "rcu_gp",
-  //     "Usuario": 0,
-  //     "Estado": 1026,
-  //     "Ram": 0,
-  //     "Padre": 2
-  //   },
-  //   {
-  //     "Pid": 4,
-  //     "Nombre": "rcu_gp",
-  //     "Usuario": 0,
-  //     "Estado": 1026,
-  //     "Ram": 0,
-  //     "Padre": 0
-  //   },
-  // ]);
 
   const [procesosDesplegados, setProcesosDesplegados] = useState({});
 

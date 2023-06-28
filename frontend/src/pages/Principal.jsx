@@ -24,7 +24,7 @@ const Principal=()=>{
          try{
             const response = await fetch(`http://${process.env.REACT_APP_PUERTO}:8080/tasks`);
             const data = await response.json();
-            //console.log(data);
+            
             
             setAllGenerales(data.AllGenerales);
             setAllProcesos(data.AllTipoProcesos );
