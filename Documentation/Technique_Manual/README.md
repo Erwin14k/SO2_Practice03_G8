@@ -601,64 +601,72 @@ Estas structs nos sirven para almacenar la información obtenida de los módulos
 ```go
 // Process represents a process with its properties
 type Process struct {
-	Pid     int    `json:"pid"`
-	Nombre  string `json:"nombre"`
-	Usuario string `json:"usuario"`
-	Estado  string `json:"estado"`
-	Ram     int    `json:"ram"`
-	Padre   int    `json:"padre"`
+	Pid     int    `json:"pid"`     // Pid represents the process ID.
+	Nombre  string `json:"nombre"`  // Nombre represents the name of the process.
+	Usuario string `json:"usuario"` // Usuario represents the user associated with the process.
+	Estado  string `json:"estado"`  // Estado represents the state of the process.
+	Ram     int    `json:"ram"`     // Ram represents the amount of RAM (in bytes) used by the process.
+	Padre   int    `json:"padre"`   // Padre represents the parent process ID.
 }
 
 // CPUInfo represents CPU information and process tasks
 type CPUInfo struct {
-	TotalCPU int       `json:"totalcpu"`
-	Running  int       `json:"running"`
-	Sleeping int       `json:"sleeping"`
-	Stopped  int       `json:"stopped"`
-	Zombie   int       `json:"zombie"`
-	Total    int       `json:"total"`
-	Tasks    []Process `json:"tasks"`
+	TotalCPU int       `json:"totalcpu"` // TotalCPU represents the total number of CPUs.
+	Running  int       `json:"running"`  // Running represents the number of running processes.
+	Sleeping int       `json:"sleeping"` // Sleeping represents the number of sleeping processes.
+	Stopped  int       `json:"stopped"`  // Stopped represents the number of stopped processes.
+	Zombie   int       `json:"zombie"`   // Zombie represents the number of zombie processes.
+	Total    int       `json:"total"`    // Total represents the total number of processes.
+	Tasks    []Process `json:"tasks"`    // Tasks represents a list of process tasks.
 }
 
 // RAMInfo represents RAM information
 type RAMInfo struct {
-	TotalRAM    int `json:"totalram"`
-	RAMLibre    int `json:"ramlibre"`
-	RAMOcupada  int `json:"ramocupada"`
+	TotalRAM    int `json:"totalram"`    // TotalRAM represents the total amount of RAM.
+	RAMLibre    int `json:"ramlibre"`    // RAMLibre represents the amount of free RAM.
+	RAMOcupada  int `json:"ramocupada"`  // RAMOcupada represents the amount of occupied RAM.
 }
 
 // General represents general system information
 type general struct {
-	TotalRAM    int `json:"totalram"`
-	RAMLibre    int `json:"ramlibre"`
-	RAMOcupada  int `json:"ramocupada"`
-	TotalCPU    int `json:"totalcpu"`
+	TotalRAM    int `json:"totalram"`    // TotalRAM represents the total amount of RAM.
+	RAMLibre    int `json:"ramlibre"`    // RAMLibre represents the amount of free RAM.
+	RAMOcupada  int `json:"ramocupada"`  // RAMOcupada represents the amount of occupied RAM.
+	TotalCPU    int `json:"totalcpu"`    // TotalCPU represents the total number of CPUs.
 }
 
 // Counters represents process counters
 type counters struct {
-	Running  int       `json:"running"`
-	Sleeping int       `json:"sleeping"`
-	Stopped  int       `json:"stopped"`
-	Zombie   int       `json:"zombie"`
-	Total    int       `json:"total"`
+	Running  int `json:"running"`  // Running represents the number of running processes.
+	Sleeping int `json:"sleeping"` // Sleeping represents the number of sleeping processes.
+	Stopped  int `json:"stopped"`  // Stopped represents the number of stopped processes.
+	Zombie   int `json:"zombie"`   // Zombie represents the number of zombie processes.
+	Total    int `json:"total"`    // Total represents the total number of processes.
 }
 
 // AllData represents all system data
 type AllData struct {
-	AllGenerales    []general    `json:"AllGenerales"`
-	AllTipoProcesos []Process  `json:"AllTipoProcesos"`
-	AllProcesos     []counters   `json:"AllProcesos"`
+	AllGenerales    []general    `json:"AllGenerales"`    // AllGenerales represents a list of general system information.
+	AllTipoProcesos []Process  `json:"AllTipoProcesos"`   // AllTipoProcesos represents a list of process information.
+	AllProcesos     []counters   `json:"AllProcesos"`     // AllProcesos represents a list of process counters.
 }
 
-// MemoryRow represents a row of memory information
-type MemoryRow struct {
-	InitialAddress string   `json:"initial_address"`
-	FinalAddress   string   `json:"final_address"`
-	SizeKB         int      `json:"size_kb"`
-	Permissions    []string `json:"permissions"`
-	Device         string   `json:"device"`
-	File           string   `json:"file"`
+// MemoryBlock represents a memory block.
+type MemoryBlock struct {
+	InitialAddress string   `json:"initial_address"` // InitialAddress represents the initial address of the memory block.
+	FinalAddress   string   `json:"final_address"`   // FinalAddress represents the final address of the memory block.
+	Permissions    []string `json:"permissions"`     // Permissions represents the permissions associated with the memory block.
+	Device         string   `json:"device"`          // Device represents the device associated with the memory block.
+	File           string   `json:"file"`            // File represents the file associated with the memory block.
+	Size           float64  `json:"size"`            // Size represents the size of the memory block.
+	Rss            float64  `json:"rss"`             // Rss represents the resident set size (RSS) of the memory block.
+}
+
+// MemoryResult represents the result of memory information.
+type MemoryResult struct {
+	TotalSize   float64        `json:"total_size"`   // TotalSize represents the total size of memory.
+	TotalRss    float64        `json:"total_rss"`    // TotalRss represents the total resident set size (RSS) of memory.
+	Blocks      []MemoryBlock  `json:"blocks"`       // Blocks represents a list of memory blocks.
 }
 ```
 
